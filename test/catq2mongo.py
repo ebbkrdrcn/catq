@@ -60,8 +60,11 @@ class CatQ2Mongo(ExpressionVisitor):
             if prefix:
                 if self.__literal_encoders.has_key(prefix):
                     return self.__literal_encoders[prefix](value)
-
                 raise Exception("Prefix '%s' does not support" % prefix)
+            else:
+                return value
+
+
         return None
 
     def __visit_number(self, expr):
