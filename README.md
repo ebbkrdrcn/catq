@@ -1,5 +1,5 @@
 # catq
-Simple Resource Query Language
+Simple Resource Query Language like OData
 
 
 
