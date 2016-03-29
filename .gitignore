@@ -1,10 +1,7 @@
-
-
 *.pyc
 dist
 build
-.idea
-.idea
+.idea/
 *.iws
 /out/
 .idea_modules/
