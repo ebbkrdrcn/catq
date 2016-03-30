@@ -10,6 +10,7 @@ class Parser:
         self.__query = query
         self.__tokenizer = Tokenizer(query)
         self.__current = None
+        self.__current_lp = None
 
     def parse(self):
         has_lp = self.__parse_left_paren()
@@ -78,7 +79,7 @@ class Parser:
 
         return None
 
-    def __parse_identifier(self):
+    def __parse_identifier(self, depth=0):
         t = self.__peek()
         if self.__accept(Token.Types.IDENTIFIER):
             dt = self.__peek()
@@ -86,9 +87,12 @@ class Parser:
             if dt.type == Token.Types.DELIMITER:
                 if dt.value == "/":
                     self.__accept(Token.Types.DELIMITER)
-                    if self.__peek().type == Token.Types.IDENTIFIER:
-                        expr = self.__parse_identifier()
-
+                    it = self.__peek()
+                    if it.type == Token.Types.IDENTIFIER:
+                        if not depth and self.__current_lp and \
+                                        self.__current_lp.value != t.value:
+                            self.__error(it)
+                        expr = self.__parse_identifier(depth=depth + 1)
             return Expression.New(Expression.MEMBER, t.value, expr)
         return None
 
@@ -114,7 +118,7 @@ class Parser:
             self.__accept(Token.Types.KEYWORD)
             if self.__parse_left_paren():
                 if k.value == "any":
-                    expr = self.__parse_any_method(member)
+                    expr = Expression.New(Expression.METHOD_CALL, "any", member, expr=self.__parse_lambda())
                 else:
                     expr = Expression.New(Expression.METHOD_CALL, k.value, member, args=self.__parse_method_arguments())
 
@@ -123,13 +127,15 @@ class Parser:
 
         return None
 
-    def __parse_any_method(self, member):
+    def __parse_lambda(self):
         it = self.__peek()
         if self.__accept(Token.Types.IDENTIFIER):
             if self.__parse_delimiter(":"):
-                param_expr = Expression.New(Expression.PARAMETER, it.value)
-                lamda_expr = Expression.New(Expression.LAMBDA, param_expr, self.parse())
-                return Expression.New(Expression.METHOD_CALL, "any", member, expr=lamda_expr)
+                self.__current_lp = it
+                pe = Expression.New(Expression.PARAMETER, it.value)
+                be = self.parse()
+                self.__current_lp = None
+                return Expression.New(Expression.LAMBDA, pe, be)
 
         return None
 

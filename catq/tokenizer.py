@@ -36,7 +36,7 @@ class Token:
         return "%s, %s | %s | \"%s\"" % (self.__offset[0], self.__offset[1], self.type, self.__value)
 
 class Tokenizer:
-    KEYWORD_RE = re.compile("^(any|contains|startswith|endswith|in)$")
+    KEYWORD_RE = re.compile("^(any|sub|startswith|endswith|in|nin)$")
     IDENTIFIER_RE = re.compile("^([_a-zA-Z][_a-zA-Z0-9]*)|\$$")
     OPERATOR_RE = re.compile("^(and|eq|(gte?)|(lte?)|ne|or)$")
     DELIMITER_RE = re.compile("[\(\)\/,\:]")
