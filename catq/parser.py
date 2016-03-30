@@ -82,6 +82,10 @@ class Parser:
     def __parse_identifier(self, depth=0):
         t = self.__peek()
         if self.__accept(Token.Types.IDENTIFIER):
+            if not depth and self.__current_lp and\
+                            self.__current_lp.value != t.value:
+                self.__error(t)
+
             dt = self.__peek()
             expr = None
             if dt.type == Token.Types.DELIMITER:
@@ -89,9 +93,6 @@ class Parser:
                     self.__accept(Token.Types.DELIMITER)
                     it = self.__peek()
                     if it.type == Token.Types.IDENTIFIER:
-                        if not depth and self.__current_lp and \
-                                        self.__current_lp.value != t.value:
-                            self.__error(it)
                         expr = self.__parse_identifier(depth=depth + 1)
             return Expression.New(Expression.MEMBER, t.value, expr)
         return None
