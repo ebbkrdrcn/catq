@@ -1,8 +1,11 @@
-# catq
+# CatQ
 Simple Resource Query Language like OData
 
+```python
+pip install catq
+```
 
-
+**Example:**
 ```python
 import re
 from catq import Parser
