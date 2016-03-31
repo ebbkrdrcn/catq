@@ -5,7 +5,6 @@ Simple Resource Query Language like OData
 pip install catq
 ```
 
-**Example:**
 ```python
 import re
 from catq import Parser
@@ -26,3 +25,47 @@ if __name__ == "__main__":
     assert q == e
     print q
 ```
+
+
+
+**Query Operators**
+
+ ```
+eq            equal
+gt            greater than
+gte           greater than or equal
+lt            less than
+lte           less than or equal.
+ne            not equal
+in            in
+nin           not in
+startswith    matches the first part of strings.
+endswith      matches the last part of strings.
+sub           matches any part of strings.
+any           determines any element in a collection matches a certain condition.
+and           logical and
+or            logical or
+```
+
+**Examples**
+
+```
+category/name eq 'movies' and like_count gte 100
+
+contents/id/in(10,22,34,36)
+
+contents/id/nin(10,22,34,36)
+
+contents/name/startswith('movie')
+
+contents/name/endswith('at')
+
+contents/title/sub('programming')
+
+contents/tags/any(tag:tag/name eq 'python')
+
+contents/categories/any(category:category/title/sub('program'))
+```
+
+
+
