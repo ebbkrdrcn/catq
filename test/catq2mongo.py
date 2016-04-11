@@ -12,13 +12,13 @@ class CatQ2Mongo(ExpressionVisitor):
             "oid": lambda x: ObjectId(x)
         }
 
-    def visit(self, expr):
-        return super(CatQ2Mongo, self).visit(expr)
+    def Visit(self, expr):
+        return super(CatQ2Mongo, self).Visit(expr)
 
-    def visit_binary(self, expr):
+    def VisitBinary(self, expr):
         q = {}
-        left = self.visit(expr.left)
-        right = self.visit(expr.right)
+        left = self.Visit(expr.left)
+        right = self.Visit(expr.right)
         if expr.operator == "and" \
                 or expr.operator == "or":
             k = "$%s" % expr.operator
@@ -34,47 +34,46 @@ class CatQ2Mongo(ExpressionVisitor):
 
         return q
 
-    def visit_member(self, expr):
+    def VisitMember(self, expr):
         if self.__param_expr:
             if expr.name == self.__param_expr.parameter:
                 expr = expr.expr
 
         if expr.expr:
-            return "%s.%s" % (expr.name, self.visit(expr.expr))
+            return "%s.%s" % (expr.name, self.Visit(expr.expr))
         else:
             return expr.name
 
-    def visit_literal(self, expr):
-        for x in [self.__visit_number, self.__visit_string, self.__visit_boolean]:
+    def VisitLiteral(self, expr):
+        for x in [self.__VisitNumber, self.__VisitString, self.__VisitBoolean]:
             result = x(expr)
             if result:
                 return result
 
-    def visit_method_call(self, expr):
+    def VisitMethodCall(self, expr):
         if expr.name == 'in':
-            return self.__visit_in(expr)
+            return self.__VisitIn(expr)
         if expr.name == 'nin':
-            return self.__visit_nin(expr)
+            return self.__VisitNin(expr)
         if expr.name == 'sub':
-            return self.__visit_sub(expr)
-
+            return self.__VisitSub(expr)
         if expr.name == 'startswith':
-            return self.__visit_startswith(expr)
+            return self.__VisitStartsWith(expr)
         if expr.name == 'endswith':
-            return self.__visit_endswith(expr)
+            return self.__VisitEndsWith(expr)
         if expr.name == 'any':
-            return self.__visit_any(expr)
+            return self.__VisitAny(expr)
 
-    def visit_lambda(self, expr):
+    def VisitLambda(self, expr):
         self.__param_expr = expr.parameter
         if expr.body.type == Expression.METHOD_CALL:
-            r = self.visit_method_call(expr.body)
+            r = self.VisitMethodCall(expr.body)
         else:
-            r = self.visit_binary(expr.body)
+            r = self.VisitBinary(expr.body)
         self.__param_expr = None
         return r
 
-    def __visit_string(self, expr):
+    def __VisitString(self, expr):
         result = re.match("^(?P<prefix>\w+)?\'(?P<value>.+)\'$", expr.value)
         if result:
             prefix = result.group("prefix")
@@ -88,7 +87,7 @@ class CatQ2Mongo(ExpressionVisitor):
                 return value
         return None
 
-    def __visit_number(self, expr):
+    def __VisitNumber(self, expr):
         result = re.search('^(?P<value>(\d+)(.\d+)?)$', expr.value)
         if result:
             v = float(result.group("value"))
@@ -99,56 +98,56 @@ class CatQ2Mongo(ExpressionVisitor):
 
         return None
 
-    def __visit_boolean(self, expr):
+    def __VisitBoolean(self, expr):
         result = re.match('^(true|false)$', expr.value)
         if result:
             return bool(expr.value)
 
         return None
 
-    def __visit_in(self, expr):
-        l = self.visit_member(expr.member)
-        r = [self.visit_literal(x) for x in expr.args]
+    def __VisitIn(self, expr):
+        l = self.VisitMember(expr.member)
+        r = [self.VisitLiteral(x) for x in expr.args]
         q = {}
         q[l] = {}
         q[l]["$in"] = r
         return q
 
-    def __visit_nin(self, expr):
-        l = self.visit_member(expr.member)
-        r = [self.visit_literal(x) for x in expr.args]
+    def __VisitNin(self, expr):
+        l = self.VisitMember(expr.member)
+        r = [self.VisitLiteral(x) for x in expr.args]
         q = {}
         q[l] = {}
         q[l]["$nin"] = r
         return q
 
-    def __visit_sub(self, expr):
-        l = self.visit_member(expr.member)
-        r = [self.visit_literal(x) for x in expr.args]
+    def __VisitSub(self, expr):
+        l = self.VisitMember(expr.member)
+        r = [self.VisitLiteral(x) for x in expr.args]
         q = {}
         q[l] = {}
         q[l]["$regex"] = "/.*(%s).*/i" % re.escape(r[0])
         return q
 
-    def __visit_startswith(self, expr):
-        l = self.visit_member(expr.member)
-        r = [self.visit_literal(x) for x in expr.args]
+    def __VisitStartsWith(self, expr):
+        l = self.VisitMember(expr.member)
+        r = [self.VisitLiteral(x) for x in expr.args]
         q = {}
         q[l] = {}
         q[l]["$regex"] = "/^(%s)/i" % re.escape(r[0])
         return q
 
-    def __visit_endswith(self, expr):
-        l = self.visit_member(expr.member)
-        r = [self.visit_literal(x) for x in expr.args]
+    def __VisitEndsWith(self, expr):
+        l = self.VisitMember(expr.member)
+        r = [self.VisitLiteral(x) for x in expr.args]
         q = {}
         q[l] = {}
         q[l]["$regex"] = "/(%s)$/i" % re.escape(r[0])
         return q
 
-    def __visit_any(self, expr):
-        l = self.visit_member(expr.member)
-        r = self.visit_lambda(expr.expr)
+    def __VisitAny(self, expr):
+        l = self.VisitMember(expr.member)
+        r = self.VisitLambda(expr.expr)
         q = {}
         q[l] = {}
         q[l]["$elemMatch"] = r

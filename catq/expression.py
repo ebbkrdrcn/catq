@@ -58,12 +58,12 @@ class BinaryExpression(Expression):
     def left(self):
         return self.__left
 
-    def to_json(self):
+    def ToJson(self):
         return dict(
             type=self.type,
             operator=self.__operator,
-            left=self.__left.to_json(),
-            right=self.__right.to_json()
+            left=self.__left.ToJson(),
+            right=self.__right.ToJson()
         )
 
 class MemberExpression(Expression):
@@ -85,11 +85,11 @@ class MemberExpression(Expression):
     def expr(self):
         return self.__expr
 
-    def to_json(self):
+    def ToJson(self):
         return dict(
             type=self.type,
             name=self.__name,
-            expr=self.__expr.to_json() if self.__expr else None
+            expr=self.__expr.ToJson() if self.__expr else None
         )
 
 class ParameterExpression(Expression):
@@ -105,7 +105,7 @@ class ParameterExpression(Expression):
     def parameter(self):
         return self.__parameter
 
-    def to_json(self):
+    def ToJson(self):
         return dict(
             type=self.type,
             parameter=self.parameter
@@ -121,7 +121,7 @@ class LiteralExpression(Expression):
     def value(self):
         return self.__value
 
-    def to_json(self):
+    def ToJson(self):
         return dict(
             type=self.type,
             value=self.__value
@@ -153,18 +153,17 @@ class MethodCallExpression(Expression):
     def expr(self):
         return self.__expr
 
-    def to_json(self):
-
+    def ToJson(self):
         args = []
         if self.__args:
             for x in self.__args:
-                args.append(x.to_json())
+                args.append(x.ToJson())
 
         return dict(
             type=self.type,
             name=self.__name,
-            member=self.__member.to_json(),
-            expr=self.__expr.to_json() if self.__expr else None,
+            member=self.__member.ToJson(),
+            expr=self.__expr.ToJson() if self.__expr else None,
             args=args
         )
 
@@ -187,39 +186,42 @@ class LambdaExpression(Expression):
     def body(self):
         return self.__body
 
-    def to_json(self):
+    def ToJson(self):
         return dict(
             type=self.type,
-            parameter=self.__parameter.to_json(),
-            body=self.__body.to_json()
+            parameter=self.__parameter.ToJson(),
+            body=self.__body.ToJson()
         )
 
 class ExpressionVisitor(object):
-    def visit(self, expr):
+    def Visit(self, expr):
         if expr.type == Expression.BINARY:
-            return self.visit_binary(expr)
+            return self.VisitBinary(expr)
         elif expr.type == Expression.MEMBER:
-            return self.visit_member(expr);
+            return self.VisitMember(expr);
         elif expr.type == Expression.PARAMETER:
-            return self.visit_parameter(expr);
+            return self.VisitParameter(expr);
         elif expr.type == Expression.LITERAL:
-            return self.visit_literal(expr);
+            return self.VisitLiteral(expr);
         elif expr.type == Expression.METHOD_CALL:
-            return self.visit_method_call(expr);
+            return self.VisitMethodCall(expr);
         elif expr.type == Expression.LAMBDA:
-            return self.visit_lambda(expr);
+            return self.VisitLambda(expr);
 
-    def visit_binary(self, expr):
+    def VisitBinary(self, expr):
         pass
 
-    def visit_member(self, expr):
+    def VisitMember(self, expr):
         pass
 
-    def visit_literal(self, expr):
+    def VisitParameter(self, expr):
         pass
 
-    def visit_method_call(self, expr):
+    def VisitLiteral(self, expr):
         pass
 
-    def visit_lambda(self, expr):
+    def VisitMethodCall(self, expr):
+        pass
+
+    def VisitLambda(self, expr):
         pass

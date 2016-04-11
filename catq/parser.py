@@ -12,163 +12,163 @@ class Parser:
         self.__current = None
         self.__current_lp = None
 
-    def parse(self):
-        has_lp = self.__parse_left_paren()
-        left = self.__parse_identifier()
-        if self.__peek().type == Token.Types.KEYWORD:
-            expr = self.__parse_method(left)
-            and_or_expr = self.__parse_and_or(expr)
+    def Parse(self):
+        has_lp = self.__ParseLeftParen()
+        left = self.__ParseIdentifier()
+        if self.__Peek().type == Token.Types.KEYWORD:
+            expr = self.__ParseMethod(left)
+            and_or_expr = self.__ParseAndOr(expr)
             if and_or_expr:
                 expr = and_or_expr
 
             return expr
         else:
-            expr = self.__parse_binary(left)
+            expr = self.__ParseBinary(left)
             if expr:
-                if not has_lp or self.__parse_right_paren():
-                    and_or_expr = self.__parse_and_or(expr)
+                if not has_lp or self.__ParseRightParent():
+                    and_or_expr = self.__ParseAndOr(expr)
                     if and_or_expr:
                         return and_or_expr
 
                     return expr
 
-        self.__error(self.__peek())
+        self.__RaiseError(self.__Peek())
 
     def debug_string(self):
-        r = self.parse()
-        return self.__to_json(r)
+        r = self.Parse()
+        return self.__ToJson(r)
 
-    def __parse_left_paren(self):
-        return self.__parse_delimiter("(")
+    def __ParseLeftParen(self):
+        return self.__ParseDelimiter("(")
 
-    def __parse_right_paren(self):
-        return self.__parse_delimiter(")")
+    def __ParseRightParent(self):
+        return self.__ParseDelimiter(")")
 
-    def __parse_operator(self):
-        t = self.__peek()
+    def __ParseOperator(self):
+        t = self.__Peek()
         if t.type == Token.Types.OPERATOR \
-                and not re.match("^(and|or)$", self.__peek().value):
-            self.__accept(Token.Types.OPERATOR)
+                and not re.match("^(and|or)$", self.__Peek().value):
+            self.__Accept(Token.Types.OPERATOR)
             return True
         return False
 
-    def __parse_and_or(self, expr):
-        has_lp = self.__parse_left_paren()
-        t = self.__peek()
+    def __ParseAndOr(self, expr):
+        has_lp = self.__ParseLeftParen()
+        t = self.__Peek()
         if t.type == Token.Types.OPERATOR \
-                and re.match("^(and|or)$", self.__peek().value):
-            self.__accept(Token.Types.OPERATOR)
-            expr = self.__parse_binary(expr, op=t, right=self.parse())
-            if not has_lp or self.__parse_right_paren():
+                and re.match("^(and|or)$", self.__Peek().value):
+            self.__Accept(Token.Types.OPERATOR)
+            expr = self.__ParseBinary(expr, op=t, right=self.Parse())
+            if not has_lp or self.__ParseRightParent():
                 return expr
 
         return None
 
-    def __parse_binary(self, left, op=None, right=None):
+    def __ParseBinary(self, left, op=None, right=None):
         if not op:
-            op = self.__peek()
+            op = self.__Peek()
 
         if not right:
-            if self.__parse_operator():
-                right = self.__parse_literal()
+            if self.__ParseOperator():
+                right = self.__ParseLiteral()
             else:
-                right = self.__parse_and_or(left)
+                right = self.__ParseAndOr(left)
 
         if right:
             return Expression.New(Expression.BINARY, op.value, left, right)
 
         return None
 
-    def __parse_identifier(self, depth=0):
-        t = self.__peek()
-        if self.__accept(Token.Types.IDENTIFIER):
+    def __ParseIdentifier(self, depth=0):
+        t = self.__Peek()
+        if self.__Accept(Token.Types.IDENTIFIER):
             if not depth and self.__current_lp and\
                             self.__current_lp.value != t.value:
-                self.__error(t)
+                self.__RaiseError(t)
 
-            dt = self.__peek()
+            dt = self.__Peek()
             expr = None
             if dt.type == Token.Types.DELIMITER:
                 if dt.value == "/":
-                    self.__accept(Token.Types.DELIMITER)
-                    it = self.__peek()
+                    self.__Accept(Token.Types.DELIMITER)
+                    it = self.__Peek()
                     if it.type == Token.Types.IDENTIFIER:
-                        expr = self.__parse_identifier(depth=depth + 1)
+                        expr = self.__ParseIdentifier(depth=depth + 1)
             return Expression.New(Expression.MEMBER, t.value, expr)
         return None
 
-    def __parse_delimiter(self, v):
-        lp = self.__peek()
+    def __ParseDelimiter(self, v):
+        lp = self.__Peek()
         if lp.type == Token.Types.DELIMITER and lp.value == v:
-            self.__accept(Token.Types.DELIMITER)
+            self.__Accept(Token.Types.DELIMITER)
             return True
         return False
 
-    def __parse_literal(self):
-        l = self.__peek()
+    def __ParseLiteral(self):
+        l = self.__Peek()
         if l.type == Token.Types.LITERAL:
-            self.__accept(Token.Types.LITERAL)
+            self.__Accept(Token.Types.LITERAL)
             return Expression.New(Expression.LITERAL, l.value)
 
         return None
 
-    def __parse_method(self, member):
-        k = self.__peek()
+    def __ParseMethod(self, member):
+        k = self.__Peek()
         expr = None
         if k.type == Token.Types.KEYWORD:
-            self.__accept(Token.Types.KEYWORD)
-            if self.__parse_left_paren():
+            self.__Accept(Token.Types.KEYWORD)
+            if self.__ParseLeftParen():
                 if k.value == "any":
-                    expr = Expression.New(Expression.METHOD_CALL, "any", member, expr=self.__parse_lambda())
+                    expr = Expression.New(Expression.METHOD_CALL, "any", member, expr=self.__ParseLambda())
                 else:
-                    expr = Expression.New(Expression.METHOD_CALL, k.value, member, args=self.__parse_method_arguments())
+                    expr = Expression.New(Expression.METHOD_CALL, k.value, member, args=self.__ParseMethodArgs())
 
-                if self.__parse_right_paren():
+                if self.__ParseRightParent():
                     return expr
 
         return None
 
-    def __parse_lambda(self):
-        it = self.__peek()
-        if self.__accept(Token.Types.IDENTIFIER):
-            if self.__parse_delimiter(":"):
+    def __ParseLambda(self):
+        it = self.__Peek()
+        if self.__Accept(Token.Types.IDENTIFIER):
+            if self.__ParseDelimiter(":"):
                 self.__current_lp = it
                 pe = Expression.New(Expression.PARAMETER, it.value)
-                be = self.parse()
+                be = self.Parse()
                 self.__current_lp = None
                 return Expression.New(Expression.LAMBDA, pe, be)
 
         return None
 
-    def __parse_method_arguments(self, list=None):
+    def __ParseMethodArgs(self, list=None):
         if not list:
             list = []
 
-        expr = self.__parse_literal()
+        expr = self.__ParseLiteral()
         if expr:
             list.append(expr)
-            if self.__parse_delimiter(","):
-                return self.__parse_method_arguments(list)
+            if self.__ParseDelimiter(","):
+                return self.__ParseMethodArgs(list)
 
             return list
 
-        self.__error(self.__peek())
+        self.__RaiseError(self.__Peek())
 
-    def __accept(self, type):
-        if self.__peek().type == type:
-            if self.__tokenizer.has_next():
-                self.__current = self.__tokenizer.get_next()
+    def __Accept(self, type):
+        if self.__Peek().type == type:
+            if self.__tokenizer.HasNext():
+                self.__current = self.__tokenizer.GetNextToken()
             return True
         return False
 
-    def __peek(self):
+    def __Peek(self):
         if not self.__current:
-            if self.__tokenizer.has_next():
-                self.__current = self.__tokenizer.get_next()
+            if self.__tokenizer.HasNext():
+                self.__current = self.__tokenizer.GetNextToken()
 
         return self.__current
 
-    def __error(self, *args):
+    def __RaiseError(self, *args):
         s = args[0].offset[0]
         e = args[len(args) - 1].offset[1]
         q = self.__query[0:e].split(' ')
@@ -179,5 +179,5 @@ class Parser:
 
         raise SyntaxError("Syntax error at position %s-%s on \"%s\"" % (s, e, m))
 
-    def __to_json(self, r):
-        return r.to_json()
+    def __ToJson(self, r):
+        return r.ToJson()

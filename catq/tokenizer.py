@@ -50,15 +50,15 @@ class Tokenizer:
         self.__query = query
         self.__pos = 0
 
-    def get_next(self):
+    def GetNextToken(self):
         s = ''
         instr = False
         esc = False
         x = None
         sp = self.__pos
 
-        while self.__has_sym():
-            x = self.__get_next_sym()
+        while self.__HasSymbol():
+            x = self.__GetNextSymbol()
             if x == ' ':
                 if not s:
                     s = x
@@ -92,58 +92,58 @@ class Tokenizer:
             s += x
 
         if s:
-            t = self.__find_type(s)
+            t = self.__FindType(s)
             if t == Token.Types.WHITESPACE:
-                return self.get_next()
+                return self.GetNextToken()
 
             return Token(s, t, [sp, self.__pos])
 
         return None
 
-    def has_next(self):
-        return self.__has_sym()
+    def HasNext(self):
+        return self.__HasSymbol()
 
-    def __has_sym(self):
+    def __HasSymbol(self):
         return self.__pos < len(self.__query)
 
-    def __get_next_sym(self):
+    def __GetNextSymbol(self):
         c = self.__query[self.__pos]
         self.__pos = self.__pos + 1
         return c
 
-    def __find_type(self, value):
+    def __FindType(self, value):
         if not value:
             raise ValueError("value")
 
-        if self.__is_whitespace(value):
+        if self.__IsWhitespace(value):
             return Token.Types.WHITESPACE
-        elif self.__is_literal(value):
+        elif self.__IsLiteral(value):
             return Token.Types.LITERAL
-        elif self.__is_delimiter(value):
+        elif self.__IsDelimiter(value):
             return Token.Types.DELIMITER
-        elif self.__is_keyword(value):
+        elif self.__IsKeyword(value):
             return Token.Types.KEYWORD
-        elif self.__is_operator(value):
+        elif self.__IsOperator(value):
             return Token.Types.OPERATOR
-        elif self.__is_identifier(value):
+        elif self.__IsIdentifier(value):
             return Token.Types.IDENTIFIER
 
         return None
 
-    def __is_whitespace(self, value):
+    def __IsWhitespace(self, value):
         return re.match(Tokenizer.WHITESPACE_RE, value)
 
-    def __is_delimiter(self, value):
+    def __IsDelimiter(self, value):
         return re.match(Tokenizer.DELIMITER_RE, value)
 
-    def __is_keyword(self, value):
+    def __IsKeyword(self, value):
         return re.match(Tokenizer.KEYWORD_RE, value)
 
-    def __is_operator(self, value):
+    def __IsOperator(self, value):
         return re.match(Tokenizer.OPERATOR_RE, value)
 
-    def __is_identifier(self, value):
+    def __IsIdentifier(self, value):
         return re.match(Tokenizer.IDENTIFIER_RE, value)
 
-    def __is_literal(self, value):
+    def __IsLiteral(self, value):
         return re.match(Tokenizer.LITERAL_RE, value)

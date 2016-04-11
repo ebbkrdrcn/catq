@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='catq',
-    version='0.1.5',
+    version='0.2.0',
     packages=['catq'],
     description='Simple resource query language.',
     author='Ebubekir Dirican',
